@@ -25,7 +25,9 @@ SECRET_KEY = "django-insecure-lih-0gsf@!aahku=ga2ccs@@_0t19e^od*=1&k)uda&%6#@q&i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'spam-email-detector-1-843g.onrender.com',
+]
 
 
 # Application definition
