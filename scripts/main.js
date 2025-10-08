@@ -42,7 +42,7 @@ checkButton.addEventListener('click', () => {
     };
 
     // Use fetch() to send data to your Django backend
-    fetch('https://spam-email-detector-1-843g.onrender.com/', {
+    fetch('https://spam-email-detector-1-843g.onrender.com/api/predict/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
