@@ -128,6 +128,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # in spam_project/settings.py
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5500", # For VS Code Live Server
-    "http://localhost:5500",
+    "https://sandeepkumarkuanar.github.io",
 ]
