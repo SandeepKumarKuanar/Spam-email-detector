@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam or Ham?</title>
+    <!-- for the heading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap" rel="stylesheet">
+    <!-- for styling -->
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="merriweather-text">Is it a spam?</h1>
+        <div class="input-email">
+            <label for="emailInput">Type the email below:</label>
+            <textarea id="emailInput" rows="10" cols="50" placeholder="Type or paste the email here..."></textarea>
+        </div>
+        
+        <input type="button" value="Check if spam!" id="checkButton">
+    </div>
+    <div id="result-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span id="close-button" class="modal-close-button">&times;</span>
+            <p id="modal-text"></p>
+        </div>
+    </div>
+    <script src="./scripts/main.js"></script>
+</body>
+</html>
