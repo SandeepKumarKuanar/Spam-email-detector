@@ -1,3 +1,4 @@
+####### this is the static file that was first created to see if the model is working or not, before creating the dynamic version of it in 'app.py' using DJango as the backend layer and the frontend #######
 ### import all the necessary libraries
 import numpy as np
 import pandas as pd
