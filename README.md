@@ -167,7 +167,7 @@ Model and vectorizer have been saved to the 'model' directory.
 
 - GitHub: [SandeepKumarKuanar](https://github.com/SandeepKumarKuanar)
 - X: [@kuanar_sandeep](https://x.com/kuanar_sandeep)
-- Email: kuanarsandeepkumar@gmail.com
+- Email: `kuanarsandeepkumar@gmail.com`
 
 ## Credits
 
