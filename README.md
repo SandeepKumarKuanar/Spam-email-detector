@@ -6,7 +6,8 @@ An ML-powered REST API that detects whether a message is **spam** or **ham**, pa
 
 - **API:** `https://spam-email-detector-1-843g.onrender.com/api/predict/`
 - **Frontend:** hosted on GitHub Pages (see links in the repo description)
-- **Screenshot:** *(add a screenshot of the frontend UI here)*
+
+![Spam Email Classifier interface](screenshots/landing.png)
 
 ## Features
 
