@@ -1,4 +1,4 @@
-# 📧 Spam Email Classifier
+# Spam Message Classifier
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue.svg)
 ![Django](https://img.shields.io/badge/Django-5.2-green.svg)
@@ -6,11 +6,11 @@
 ![Model](https://img.shields.io/badge/Model-LogisticRegression-green.svg)
 ![Deployed on Render](https://img.shields.io/badge/Deployed-Render-purple.svg)
 
-An end-to-end machine learning web app that classifies SMS messages as **spam** or **ham** from a trained **Logistic Regression** model, served through a **Django REST API** with a clean, dependency-free web frontend.
+An end-to-end spam message classification web application using TF-IDF, Logistic Regression, a Django REST API, and a vanilla JavaScript frontend. The trained model classifies short messages (SMS-style text) as **spam** or **ham**.
 
-> 🔗 **Live demo:** <a href="https://sandeepkumarkuanar.github.io/Spam-email-detector/" target="_blank">sandeepkumarkuanar.github.io/Spam-email-detector</a>
+> **Live demo:** <a href="https://sandeepkumarkuanar.github.io/Spam-email-detector/" target="_blank">sandeepkumarkuanar.github.io/Spam-email-detector</a>
 >
-> ⚙️ **API:** <a href="https://spam-email-detector-1-843g.onrender.com/api/predict/" target="_blank">spam-email-detector-1-843g.onrender.com/api/predict</a>
+> **API:** <a href="https://spam-email-detector-1-843g.onrender.com/api/predict/" target="_blank">spam-email-detector-1-843g.onrender.com/api/predict/</a>
 
 ---
 
@@ -26,9 +26,10 @@ An end-to-end machine learning web app that classifies SMS messages as **spam** 
 - [Project Structure](#project-structure)
 - [Local Setup](#local-setup)
 - [API Reference](#api-reference)
-- [Deployment on Render](#deployment-on-render)
-- [Known Issues & Limitations](#known-issues--limitations)
+- [Deployment Architecture](#deployment-architecture)
+- [Known Limitations](#known-limitations)
 - [Roadmap](#roadmap)
+- [Documentation Note](#documentation-note)
 - [Author](#author)
 - [License](#license)
 
@@ -36,71 +37,81 @@ An end-to-end machine learning web app that classifies SMS messages as **spam** 
 
 ## Overview
 
-This project takes a classic text-classification problem — deciding whether a short message is spam or legitimate — and packages it as a complete, production-shaped full-stack application:
+This project packages a classic text-classification problem — deciding whether a short message is spam or legitimate — as a full-stack application:
 
-- **ML core:** a `scikit-learn` Logistic Regression classifier trained on ~5,500 SMS messages using TF-IDF vectorization, with the trained model and vectorizer persisted as `.joblib` artifacts.
+- **ML core:** a `scikit-learn` Logistic Regression classifier trained on 5,572 SMS messages from the SMS Spam Collection dataset using TF-IDF vectorization. The trained model and vectorizer are persisted as `.joblib` artifacts.
 - **Backend:** a Django REST Framework API that loads both artifacts once at app startup and serves predictions as JSON.
 - **Frontend:** a single-page vanilla HTML/CSS/JS UI that posts a message to the API and renders the spam/ham verdict.
 
-Everything is wired together so a user can hit the live URL, paste a message, and get a classification back in seconds.
+The prediction flow does not use the Django database; it runs entirely in memory on the pre-loaded model and vectorizer.
 
 ---
 
 ## Features
 
-- **Logistic Regression + TF-IDF** — a fast, interpretable pipeline that needs no GPU and classifies in milliseconds.
-- **Eager model loading** — the model and vectorizer are loaded once when the Django app starts (`AppConfig`), so every request hits a warm model.
-- **CORS-enabled JSON API** — the API is callable from any origin, so the static frontend can live anywhere.
-- **Dependency-free frontend** — a small single-page UI built with plain HTML, CSS, and JavaScript (no build step, no framework).
-- **Persisted model artifacts** — `spam_detector_model.joblib` and `tfidf_vectorizer.joblib` make the model reproducible and redeployable without retraining.
+- **Logistic Regression + TF-IDF** — an interpretable pipeline (`sklearn.linear_model.LogisticRegression`, default hyperparameters) that runs without a GPU.
+- **Eager model loading** — the model and vectorizer are loaded once when the Django app starts (`api/apps.py`), so every request hits a warm model.
+- **CORS-restricted JSON API** — CORS is configured only for the GitHub Pages origin `https://sandeepkumarkuanar.github.io` (see `CORS_ALLOWED_ORIGINS` in `spam_project/settings.py`), so browsers block calls from any other origin.
+- **Dependency-free frontend** — a single-page UI in plain HTML, CSS, and JavaScript (no build step, no framework).
+- **Persisted model artifacts** — `model/spam_detector_model.joblib` and `model/tfidf_vectorizer.joblib` let the model be redeployed without retraining.
 
 ---
 
 ## Screenshots
 
-*The live web UI — drop a message, get a verdict.*
+*The live web UI — type a message, get a verdict.*
 
-![Spam Email Classifier interface](screenshots/landing.png)
+![Spam message classifier interface](screenshots/landing.png)
 
 ---
 
 ## Tech Stack
 
-| Layer       | Technology                                                              |
-|-------------|-------------------------------------------------------------------------|
-| Language    | Python 3.12                                                             |
-| ML          | scikit-learn (LogisticRegression, TfidfVectorizer), joblib for persistence |
-| Data        | pandas                                                                  |
-| Backend     | Django 5.2, Django REST Framework, django-cors-headers                   |
-| Frontend    | Vanilla HTML5, CSS3, JavaScript (no framework)                          |
-| Deployment  | Render (Gunicorn as the WSGI server) · GitHub Pages (frontend)          |
-| Versioning  | Git, with model artifacts tracked as binaries                           |
+| Layer       | Technology                                                                       |
+|-------------|----------------------------------------------------------------------------------|
+| Language    | Python 3.12                                                                      |
+| ML          | scikit-learn (`LogisticRegression`, `TfidfVectorizer`), `joblib` for persistence  |
+| Data        | pandas (`train_model.py` only)                                                   |
+| Backend     | Django 5.2, Django REST Framework, django-cors-headers                            |
+| Frontend    | Vanilla HTML5, CSS3, JavaScript (no framework)                                   |
+| Deployment  | Render Web Service (Gunicorn as the WSGI server) · GitHub Pages (static frontend) |
+| Versioning  | Git, with model artifacts tracked as binaries                                    |
+
+Dependencies are declared unpinned in `requirements.txt`.
 
 ---
 
 ## Dataset
 
-SMS messages from the **SMS Spam Collection** dataset (`model/dataset/spam.csv`), a public dataset widely used for spam classification.
+The dataset is the **SMS Spam Collection** (`model/dataset/spam.csv`), a public dataset of SMS messages widely used for spam classification research. It is not an email dataset.
 
 - **5,572** messages × **2** columns (`Category`, `Message`)
 - Binary labels: `ham` (legitimate) and `spam`
-- The class distribution is **imbalanced** — roughly **13%** spam vs. **87%** ham, which matters when interpreting the accuracy figure below.
+- Class distribution is **imbalanced**: **4,825** ham (~86.6%) vs. **747** spam (~13.4%), which matters when interpreting the accuracy figure below.
 
 ---
 
 ## How It Works: The ML Pipeline
 
-The training logic lives entirely in [`train_model.py`](train_model.py):
+Training logic lives in [`train_model.py`](train_model.py):
 
 1. **Load & clean** — `model/dataset/spam.csv` is read; missing values are replaced with empty strings.
 2. **Encode labels** — `ham` is mapped to `0` and `spam` to `1`.
-3. **Split** — 80/20 train/test split (`random_state=3`).
+3. **Split** — 80/20 train/test split (`test_size=0.2`, `random_state=3`).
 4. **Vectorize** — a `TfidfVectorizer(min_df=1, stop_words="english", lowercase=True)` is fit on the training messages.
-5. **Train** — a `LogisticRegression` classifier is fit on the TF-IDF features.
+5. **Train** — a `LogisticRegression` (default hyperparameters) is fit on the TF-IDF features.
 6. **Evaluate** — test accuracy is printed to the console.
 7. **Persist** — the trained model and vectorizer are saved with `joblib` to `model/`.
 
-The **Django API** mirrors this at serving time: `api/apps.py` loads both `.joblib` files into memory when the app boots, and `api/views.py` transforms each incoming message with the same vectorizer before calling `model.predict()` — guaranteeing train/serve consistency.
+The **Django API** mirrors this at serving time. `api/apps.py` loads both `.joblib` files into memory when the app starts, and `api/views.py` transforms each incoming message with the same vectorizer before calling `model.predict()`, guaranteeing train/serve consistency.
+
+**Request/response flow:**
+
+1. A user types a message in `index.html`.
+2. `scripts/main.js` POSTs `{"message": "..."}` to `/api/predict/` via `fetch`.
+3. `PredictView.post` reads the `message` field; if it is empty or missing, it returns `400 {"error": "Message not provided"}`.
+4. Otherwise the message is vectorized and passed to the model, returning `200 {"prediction": "spam"}` or `200 {"prediction": "ham"}`.
+5. The frontend renders the verdict in a modal.
 
 ---
 
@@ -108,9 +119,11 @@ The **Django API** mirrors this at serving time: `api/apps.py` loads both `.jobl
 
 | Dataset | Accuracy |
 |---------|----------|
-| **Test** | ≈ **0.96** |
+| **Test** | ≈ **0.967** |
 
-A single hold-out accuracy of **≈0.96** on the 20% test split. Note this is a plain accuracy score over an imbalanced dataset (see [Known Issues & Limitations](#known-issues--limitations)) — a quick sanity check on the live API: a typical "You won a free iPhone" message classifies as `spam`.
+This is a **single hold-out accuracy** of ≈0.967 (≈96.7%) on the fixed 20% test split (1,115 messages, `random_state=3`). It is the only metric the current implementation computes.
+
+Because the dataset is ~86.6% ham, a "predict everything as ham" baseline already scores ~0.87. This single accuracy figure should not be read as proof of production-quality spam detection; see [Known Limitations](#known-limitations).
 
 ---
 
@@ -122,6 +135,7 @@ spam-email-classifier/
 │   ├── apps.py                       # Loads model + vectorizer at app startup
 │   ├── urls.py                       # /api/predict/ route
 │   ├── views.py                      # PredictView API endpoint
+│   ├── tests.py                      # Empty stub (no tests)
 │   └── migrations/
 ├── spam_project/                     # Django project config (settings, urls, wsgi/asgi)
 │   ├── settings.py
@@ -131,7 +145,8 @@ spam-email-classifier/
 ├── model/                            # ML artifacts
 │   ├── dataset/
 │   │   └── spam.csv                  # SMS Spam Collection training data
-│   ├── spam_detector_model.joblib    # Trained classifier
+│   ├── main.py                       # Standalone experimentation script (not used by the app)
+│   ├── spam_detector_model.joblib    # Trained LogisticRegression classifier
 │   └── tfidf_vectorizer.joblib       # Trained TF-IDF vectorizer
 ├── screenshots/
 │   └── landing.png                   # Web UI screenshot
@@ -142,7 +157,8 @@ spam-email-classifier/
 ├── index.html                        # Web frontend (single page)
 ├── train_model.py                    # ML pipeline: train, evaluate, save
 ├── manage.py                         # Django management entrypoint
-├── requirements.txt                  # Python dependencies
+├── requirements.txt                  # Python dependencies (unpinned)
+├── db.sqlite3                        # Django SQLite DB (not used by the prediction flow)
 ├── README.md
 ├── LICENSE
 └── .gitignore
@@ -154,15 +170,16 @@ spam-email-classifier/
 
 ### Prerequisites
 
-- **Python 3.8+**
+- Python 3.12 or newer
+- `pip`
 
 ### Steps
 
-1. **Clone the repository**
+1. **Clone the repository** (from the repo root, not this directory name, after cloning):
 
    ```bash
    git clone git@github.com:SandeepKumarKuanar/Spam-email-detector.git
-   cd spam-email-classifier
+   cd Spam-email-detector
    ```
 
 2. **Create and activate a virtual environment**
@@ -184,7 +201,7 @@ spam-email-classifier/
    python train_model.py
    ```
 
-   This re-splits the dataset, retrains the classifier, prints test accuracy, and overwrites `model/spam_detector_model.joblib` and `model/tfidf_vectorizer.joblib`.
+   This re-splits the dataset, retrains the classifier, prints the hold-out test accuracy, and overwrites `model/spam_detector_model.joblib` and `model/tfidf_vectorizer.joblib`. Run it from the repository root because it uses relative paths. Note: the script currently fails on newer pandas releases (see [Known Limitations](#known-limitations)).
 
 5. **Run the Django API**
 
@@ -192,11 +209,11 @@ spam-email-classifier/
    python manage.py runserver
    ```
 
-   The API is now available at `http://127.0.0.1:8000/api/predict/`.
+   Before this works locally, add `127.0.0.1` and `localhost` to `ALLOWED_HOSTS` in `spam_project/settings.py` (it currently only lists the Render hostname). The API is then available at `http://127.0.0.1:8000/api/predict/`.
 
 6. **Open the frontend**
 
-   Open `index.html` in a browser — it's a static page that talks to the API over CORS. For local testing, update the hardcoded `API_BASE_URL` in [`scripts/main.js`](scripts/main.js) to `http://127.0.0.1:8000/api/predict/` before opening the file.
+   Open `index.html` in a browser. It is a static page that calls the API via CORS, but the API only allows the GitHub Pages origin, and the API URL is hardcoded to the production Render endpoint in [`scripts/main.js`](scripts/main.js):45. To run the frontend end-to-end locally you must also add your local origin to `CORS_ALLOWED_ORIGINS` and update the hardcoded URL.
 
 ---
 
@@ -206,7 +223,7 @@ Base URL: `https://spam-email-detector-1-843g.onrender.com/api/` (or `http://127
 
 ### `POST /api/predict/`
 
-Classifies a message as `spam` or `ham`.
+Classifies a short message as `spam` or `ham`.
 
 **Request:**
 ```json
@@ -229,11 +246,18 @@ curl -X POST https://spam-email-detector-1-843g.onrender.com/api/predict/ \
 | `200` | Prediction successful: `{"prediction": "spam"}` or `{"prediction": "ham"}` |
 | `400` | No `message` provided: `{"error": "Message not provided"}` |
 
+This is the only endpoint the API implements.
+
 ---
 
-## Deployment on Render
+## Deployment Architecture
 
-The API is deployed as a **Render Web Service**; the frontend is a static page served from GitHub Pages (via CORS).
+The application is split into two independent hosts:
+
+- **API (Render Web Service):** the Django project is served by Gunicorn with `gunicorn spam_project.wsgi:application`. The model, vectorizer, and dataset ship inside the API repository; no database or external service is required at runtime.
+- **Frontend (GitHub Pages):** the static `index.html`, `scripts/main.js`, and `styles/main.css` are served from GitHub Pages at the live demo URL.
+
+The static frontend calls the API over CORS. `CORS_ALLOWED_ORIGINS` in `spam_project/settings.py` contains only `https://sandeepkumarkuanar.github.io`, so browsers will block API calls from any other origin. `ALLOWED_HOSTS` contains only `spam-email-detector-1-843g.onrender.com`.
 
 From the Render dashboard:
 
@@ -245,30 +269,39 @@ From the Render dashboard:
    ```bash
    gunicorn spam_project.wsgi:application
    ```
-3. **`ALLOWED_HOSTS`** — the Render hostname is listed in [`settings.py`](spam_project/settings.py); add your domain if it changes. For local development, `ALLOWED_HOSTS` should also include `127.0.0.1` and `localhost`.
-4. **Environment variables** — `SECRET_KEY` and `DEBUG` are currently set directly in `settings.py` for convenience (with debug left on). For a hardened production setup, move them to environment variables (`DEBUG=False`) and set values from the Render dashboard. See [Known Issues & Limitations](#known-issues--limitations).
-5. **CORS** — the frontend origin `https://sandeepkumarkuanar.github.io` is allowlisted in `CORS_ALLOWED_ORIGINS`. Add your own origin if you deploy the UI elsewhere.
+3. **`ALLOWED_HOSTS`** — add the Render hostname to `settings.py` if the domain changes, and add `127.0.0.1`/`localhost` for local development.
+4. **Environment variables** — `SECRET_KEY` and `DEBUG` are currently set directly in `settings.py` (`DEBUG = True`). For a hardened deployment, move both to environment variables (`DEBUG=False`) and set them from the Render dashboard. See [Known Limitations](#known-limitations).
+5. **CORS** — if the UI is deployed on another origin, add it to `CORS_ALLOWED_ORIGINS`; otherwise browsers will block the API calls.
 
 ---
 
-## Known Issues & Limitations
+## Known Limitations
 
-- **Imbalanced dataset, plain accuracy metric.** The dataset is ~87% ham, so a "predict everything as ham" baseline already scores ~0.87. The reported ≈0.96 test accuracy is a single hold-out number with no cross-validation and no precision/recall breakdown. Precision and recall on the `spam` class would tell a fuller story.
-- **Debug settings on for convenience.** `DEBUG = True` and a hardcoded `SECRET_KEY` in `settings.py` make local runs effortless but aren't production-safe. Moving both to environment variables is on the [roadmap](#roadmap).
-- **Manual retrain flow.** Re-running `python train_model.py` overwrites the model files, but the deployed service picks them up only after a redeploy — there's no pipeline that retrains and redeploys automatically.
-- **Hardcoded frontend URL.** [`scripts/main.js`](scripts/main.js) points at the production Render URL; testing locally requires editing it by hand.
-- **Empty test suite.** `api/tests.py` is a stub — the endpoint has no automated tests guarding it.
+- **Imbalanced dataset, plain accuracy metric.** The dataset is ~86.6% ham, so a "predict everything as ham" baseline already scores ~0.87. The reported ≈0.967 test accuracy is a single hold-out number (`random_state=3`), with no cross-validation and no precision/recall or confusion-matrix breakdown.
+- **Retraining depends on an old pandas behavior.** `train_model.py` assigns integer labels (`0`/`1`) directly into the string-dtype `Category` column. This works on the pandas 1.x line but raises a `TypeError` on current pandas releases, so the documented retrain step cannot run on a fresh install today without a compatibility fix.
+- **Debug settings are enabled.** `DEBUG = True` and a hardcoded `SECRET_KEY` in `settings.py` are convenient locally but are not production-safe. `requirements.txt` is also unpinned.
+- **Restrictive host/origin allowlists.** `ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS` are hardcoded to the current Render hostname and GitHub Pages origin; running locally or serving the UI elsewhere requires editing `settings.py`.
+- **Manual retrain flow.** Re-running `train_model.py` overwrites the model files, but the deployed service picks them up only after a redeploy — there is no automated retrain/redeploy pipeline.
+- **Hardcoded frontend API URL.** [`scripts/main.js`](scripts/main.js):45 points at the production Render URL; local testing requires editing it by hand. The frontend copy also refers to "email", while the trained model operates on SMS-style messages.
+- **No automated tests.** `api/tests.py` is an empty stub — the `/api/predict/` endpoint has no automated coverage.
+- **Generated artifacts are still tracked.** Despite the entries in `.gitignore`, `db.sqlite3` and both `.joblib` files were committed before the ignore rules were added and remain under version control.
 
 ---
 
 ## Roadmap
 
-- **Add automated tests + CI** — cover the `/api/predict/` endpoint (valid spam/ham, missing message → 400) with a GitHub Actions workflow.
-- **Harden configuration** — move `SECRET_KEY` / `DEBUG` / `ALLOWED_HOSTS` / CORS to environment variables and pin dependency versions in `requirements.txt`.
-- **Better evaluation** — add precision/recall and a confusion matrix, try class balancing (e.g., `class_weight`), and evaluate alternatives (Naive Bayes, SVM) to close the gap on the majority-class baseline.
-- **Git hygiene** — stop tracking generated artifacts (`db.sqlite3`, `.joblib` files) now that `.gitignore` is in place.
-- **Polish the frontend** — make the success/error states and the local API URL configurable without editing source.
-- **Add request logging and rate limiting** — a small but useful step toward production readiness.
+- **Add automated tests + CI** — cover `/api/predict/` (spam/ham predictions, missing message → 400) with a GitHub Actions workflow.
+- **Harden configuration** — move `SECRET_KEY` / `DEBUG` / `ALLOWED_HOSTS` / CORS to environment variables and pin dependency versions.
+- **Better evaluation** — add precision/recall and a confusion matrix, try class balancing (e.g., `class_weight`), and compare against alternatives (Naive Bayes, SVM) to close the gap on the majority-class baseline.
+- **Fix retraining** — make `train_model.py` compatible with current pandas and document exact dependency versions.
+- **Configure the frontend without editing source** — make the API base URL configurable, and align the UI copy with the SMS dataset.
+- **Git hygiene** — untrack `db.sqlite3` and the `.joblib` artifacts now that `.gitignore` covers them.
+
+---
+
+## Documentation Note
+
+This README was updated with assistance from OpenCode. The application implementation and code were developed by me; OpenCode was used here only to improve and maintain the project documentation.
 
 ---
 
